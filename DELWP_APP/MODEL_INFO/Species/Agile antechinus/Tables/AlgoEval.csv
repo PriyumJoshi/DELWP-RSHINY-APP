@@ -1,0 +1,2 @@
+"","threshold","AUC","omission.rate","sensitivity","specificity","prop.correct","Kappa","kept.model"
+"Stacked SDMs.RF.SDM.ensemble",0.7618,0.988050465413181,0.0120656004972917,0.987934399502708,0.988166531323655,0.988050450108425,0.976100898517618,1

@@ -1,0 +1,2 @@
+Already decided we won't use our background generated points since it generalizes.
+For each of the 6 species, generate a RF model. One model with the algorithm automatically generating (.pres_ensemble) it across Australia and another using the psuedo-abscene points (.pa_ensemble) generated from the spaitalEco library (points that are all close to the observation points instead of being just random)

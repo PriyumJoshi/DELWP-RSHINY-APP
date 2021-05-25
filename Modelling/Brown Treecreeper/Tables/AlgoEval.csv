@@ -1,0 +1,2 @@
+"","threshold","AUC","omission.rate","sensitivity","specificity","prop.correct","Kappa","kept.model"
+"Brown Treecreeper.RF.SDM.ensemble",0.7147,0.975881359951317,0.0242087455571955,0.975791254442805,0.97597146545983,0.975881360073892,0.951762719929964,1

@@ -1,0 +1,2 @@
+"","threshold","AUC","omission.rate","sensitivity","specificity","prop.correct","Kappa","kept.model"
+"White-browed Treecreeper.RF.SDM.ensemble",0.5511,0.895449250453013,0.105226222667615,0.894773777332385,0.89612472357364,0.895449342707901,0.79089851020707,1

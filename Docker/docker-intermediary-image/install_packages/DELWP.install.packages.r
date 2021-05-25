@@ -1,0 +1,2 @@
+packages = c("rsconnect", "shinyLP", "DT", "shinydashboard", "installr", "raster" ,"shinybusy","session", "pacman", "BiocManager", "raster", "rgdal", "dismo", "rJava","sp","maptools","rgeos","ROCR","randomForest","adabag","e1071","tree","neuralnet", "shiny", "leaflet", "smds", "remotes", "rgeos", "adabag" , "randomForest", "maptools" ,"rpart", "tree", "e1071", "lubridate", "dplyr", "spatialEco", "SSDM", "testthat", "knitr", "rmarkdown", "rgdal")
+install.packages(packages)

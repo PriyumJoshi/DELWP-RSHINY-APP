@@ -1,0 +1,128 @@
+---
+title: "TESTING"
+output: pdf_document
+---
+
+This is simply for using the self-created functions in the 'Functions.R'script.
+```{r , error= TRUE}
+source("Functions.R")
+#Mainly used for loading all models into memory
+restore.session("TESTING.Rda")
+```
+
+1  Testing methods for generating Psuedo-Abscene points
+```{r}
+#Load relevant models. Random forest model using 100 trees and 5 k-fold validation
+
+#P = only use prescene and letting model generate PA using its recommended 
+# stragety, BG = our background data assumption , PA = psuedo points that are 
+# very close to observation points using function in spatialEco (https://rdrr.io/cran/spatialEco/man/pseudo.absence.html)
+
+#Will be loaded into memory directly by restoring the session
+# A.RF_PA = readRDS("Agile_RF_PA")
+# A.RF_P = readRDS("Agile_RF_P")
+# A.RF_BG = readRDS("Agile_RF_BG")
+
+
+slot(A.RF_PA, "evaluation")
+slot(A.RF_P, "evaluation")
+slot(A.RF_BG, "evaluation")
+
+#visualize the points. Red = psuedo abscene, orange = prescene
+data("wrld_simpl")
+plot_(slot(A.RF_P,"data")[slot(A.RF_P,"data")$Presence == 1,], slot(A.RF_P,"data")[slot(A.RF_P,"data")$Presence == 0,], extent = getExtent(slot(A.RF_PA,"data")))
+
+
+plot(slot(A.RF_BG, "projection"),  xlim = c(140,152), ylim = c(-39,-33))
+points(slot(A.RF_P,"data")[slot(A.RF_P,"data")$Presence == 1,])
+
+slot(A.RF_P,"data")[slot(A.RF_P,"data")$Presence == 1,]
+```
+
+
+2	Evaluating the peformance various modelling techniques
+```{r}
+
+#Not necessary anymore, session, including all models, is saved and can be 
+#loaded into memory
+
+# A.RF = readRDS("Agile_RF_P")
+# A.MAXENT = readRDS("Agile_MAXENT_P")
+# A.GBM = readRDS("Agile_GBM_P")
+# A.GLM = readRDS("Agile_GLM_P")
+# A.GAM = readRDS("Agile_GAM_P")
+# A.ANN = readRDS("Agile_ANN_P")
+
+A.ALL = ensemble(A.RF,A.MAXENT,A.GBM,A.GLM,A.GAM,A.ANN)
+A.ALL2 = ensemble(A.RF,A.MAXENT,A.GBM,A.GAM,A.ANN)
+A.ALL3 = ensemble(A.RF,A.MAXENT,A.GAM,A.ANN)
+A.ALL4 = ensemble(A.RF,A.GAM,A.ANN)
+A.ALL5 = ensemble(A.RF,A.ANN)
+
+model_info = c("Random forest (RF)",
+               "Maximum entropy (MAXENT)",
+               "Generalized boosted regressions model (GBM)",
+               "Generalized linear model (GLM)",
+               "Generalized additive mode (GAM)",
+               "Artificial neural network (ANN)",
+               "ALL",
+               "RF + MAXENT + GBM + GAM + ANN",
+               "RF + MAXENT + GAM + ANN",
+               "RF + GAM + ANN",
+               "RF + ANN")
+            
+
+RF = slot(A.RF, "evaluation")[,c(2,4,5)]
+MAXENT = slot(A.MAXENT, "evaluation")[,c(2,4,5)]
+GBM = slot(A.GBM, "evaluation")[,c(2,4,5)]
+GLM = slot(A.GLM, "evaluation")[,c(2,4,5)]
+GAM = slot(A.GAM, "evaluation")[,c(2,4,5)]
+ANN = slot(A.ANN, "evaluation")[,c(2,4,5)]
+ALL = slot(A.ALL, "evaluation")[,c(2,4,5)]
+ALL2 = slot(A.ALL2, "evaluation")[,c(2,4,5)]
+ALL3 = slot(A.ALL3, "evaluation")[,c(2,4,5)]
+ALL4 = slot(A.ALL4, "evaluation")[,c(2,4,5)]
+ALL5 = slot(A.ALL5, "evaluation")[,c(2,4,5)]
+
+#Bind resultws into a dataframe and then add model_info column
+View(data.frame(cbind( model_info,rbind(RF,MAXENT,GBM,GLM,GAM,ANN, ALL, ALL2,
+                                        ALL3, ALL4, ALL5))))
+
+plot(slot(A.RF, "projection"), xlim = c(140,152), ylim = c(-40,-33))
+plot(slot(A.ANN, "projection"), xlim = c(140,152), ylim = c(-40,-33))
+plot(slot(A.ALL5, "projection"), xlim = c(140,152), ylim = c(-40,-33))
+
+
+#Save everything into memory, so models
+
+```
+
+
+3	Testing the final models 
+
+```{r}
+#This final model should be in memory from the restore.session at the start
+#Dataframe containing species, and mode metrics such as AUC, sensitivity, and 
+#specificity
+metrics = cbind(slot(slot(SSDM, "enms")[[1]], "name"),slot(slot(SSDM, "enms")
+                                                           [[1]], "evaluation"))
+
+colnames(metrics)[1]
+for (i in 2:6) {
+
+  metrics = bind_rows(metrics, cbind(slot(slot(SSDM, "enms")[[i]], "name"),
+                                     slot(slot(SSDM, "enms")[[i]], "evaluation")))
+}
+metrics = metrics[, c(3, 5, 6,9)]
+metrics = metrics[, c(4,1,2,3)]
+metrics[1,1] = "White-browed Treecreeper"
+
+            
+colnames(metrics)[1] = "Species"
+
+metrics
+
+```
+
+
+

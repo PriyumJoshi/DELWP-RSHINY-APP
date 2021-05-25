@@ -1,0 +1,12 @@
+name: DELWP_APP
+title: DELWP_APP
+username:
+account: pjos
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3638519
+bundleId: 4225092
+url: https://pjos.shinyapps.io/DELWP_APP/
+when: 1613391045.62957
+asMultiple: FALSE
+asStatic: FALSE

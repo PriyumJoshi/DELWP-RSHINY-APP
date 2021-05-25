@@ -1,0 +1,475 @@
+---
+title: "Preprocessing"
+output: pdf_document
+---
+
+```{r error=TRUE}
+#Restore workspace - includes all the objects/libraries from the last run. This way we don't have to run the code again and have all the R objects/libraries already loaded in. Ensure R is at version, at least, 3.6
+library(session)
+restore.session(file='Preprocessing.Rda')
+```
+
+Setting up the packages
+Ensure R is at version at least 3.6. Uncomment and run the updateR() function if it's not
+```{r error=TRUE}
+#See https://www.rdocumentation.org/packages/pacman/versions/0.5.1/topics/p_load
+install.packages("pacman") 
+library(pacman)
+packages = c("installr", "raster" ,"session", "pacman", "BiocManager", "raster", "rgdal", "dismo", "rJava","sp","maptools","ROCR","randomForest","adabag","e1071","tree","neuralnet", "shiny", "leaflet", "smds", "remotes", "rgeos", "adabag" ,  "maptools" ,"rpart",  "lubridate", "dplyr", "spatialEco", "SSDM", "testthat", "knitr", "rmarkdown")
+
+p_load(packages, character.only = TRUE) 
+
+#updateR()
+
+p_loaded(packages, character.only = TRUE) 
+
+
+
+```
+
+
+Download additional observation data for all species from GBIF (Global Biodiversity Information Facility) https://www.gbif.org 
+```{r}
+
+#Loading the data. High realiability = values that are acceptable or confirmed
+#If you filter by acceptable, confirmed, and high reliability some species have 0 observation points or very little
+#For the purpose of training, we choose points that are either acceptable/confiremd
+data = read.csv("Monash_sample_VBA.csv", stringsAsFactors = FALSE)
+data = data[data$RELIABILITY != "Unconfirmed" & data$RELIABILITY != "" ,]
+
+
+#Seperate each of the species into their own dataframe
+Agile = data[data$COMMON_NME == "Agile Antechinus",]
+BrownTreecreeper = data[data$COMMON_NME == "Brown Treecreeper",]
+CommonBeardheath = data[data$COMMON_NME == "Common Beard-heath",]
+SmallTriggerplant = data[data$COMMON_NME == "Small Triggerplant",]
+SouthernBrownTreeFrog = data[data$COMMON_NME == "Southern Brown Tree Frog",]
+WhitebrowedTreecreeper = data[data$COMMON_NME == "White-browed Treecreeper",]
+
+
+#Get latitude and longitude values; longitude is the first and latitude the second column
+Agile.c =  Agile[,c(13,12)]
+BrownTreeCreeper.c= BrownTreecreeper[,c(13,12)]
+CommonBeardheath.c= CommonBeardheath[,c(13,12)]
+SmallTriggerplant.c= SmallTriggerplant[,c(13,12)]
+SouthernBrownTreeFrog.c = SouthernBrownTreeFrog[,c(13,12)]
+WhitebrowedTreecreeper.c= WhitebrowedTreecreeper[,c(13,12)]
+
+#------ NO NEED TO RUN THIS AGAIN. RESULT IS ALREADY SAVED -------------
+
+# #Additional coordinates downloaded from Global Biodiversity Information Facility
+# Agile.gbif = gbif('Antechinus', 'agilis') #https://www.gbif.org/species/2435369
+# BrownTreeCreeper.gbif = gbif('Climacteris', 'picumnus') #https://www.gbif.org/species/2494126
+# SmallTriggerplant.gbif = gbif("Stylidium", "despectum") #https://www.gbif.org/species/5543531
+# SouthernBrownTreeFrog.gbif = gbif("Litoria", "ewingii")#https://www.gbif.org/species/2427705
+# WhitebrowedTreecreeper.gbif = gbif("Climacteris", "affinis") #https://www.gbif.org/en/species/2494130
+# CommonBeardheath.gbif = CommonBeardheath.gbif[CommonBeardheath.gbif$acceptedScientificName == "Leucopogon virgatus var. virgatus",] #https://www.gbif.org/species/4010848
+
+#save downloaded gbif data
+# write.csv(Agile.gbif, "Agile.csv")
+# write.csv(BrownTreeCreeper.gbif, "BrownTreeCreeper.csv")
+# write.csv(CommonBeardheath.gbif, "CommonBeardheath.csv")
+# write.csv(SmallTriggerplant.gbif, "SmallTriggerplant.csv")
+# write.csv(SouthernBrownTreeFrog.gbif, "SouthernBrownTreeFrog.csv")
+# write.csv(WhitebrowedTreecreeper.gbif, "WhitebrowedTreecreeper.csv")
+
+
+
+#Read saved species data from gbif
+Agile.gbif = read.csv("Agile.csv")
+BrownTreeCreeper.gbif = read.csv("BrownTreeCreeper.csv")
+CommonBeardheath.gbif = read.csv("CommonBeardheath.csv")
+SmallTriggerplant.gbif = read.csv("SmallTriggerplant.csv")
+SouthernBrownTreeFrog.gbif = read.csv("SouthernBrownTreeFrog.csv")
+WhitebrowedTreecreeper.gbif = read.csv("WhitebrowedTreecreeper.csv")
+
+#Filter years in the downloaded GBIF data so the earliest year => earliest year of given DELWP dataset
+earliest_year = min(year(dmy(Agile$SURVEY_START_DATE)))
+Agile.gbif = Agile.gbif[Agile.gbif$year >= earliest_year,]
+
+earliest_year = min(year(dmy(BrownTreecreeper$SURVEY_START_DATE)))
+BrownTreeCreeper.gbif = BrownTreeCreeper.gbif[BrownTreeCreeper.gbif$year >= earliest_year,]
+
+earliest_year = min(year(dmy(CommonBeardheath$SURVEY_START_DATE)))
+CommonBeardheath.gbif = CommonBeardheath.gbif[CommonBeardheath.gbif$year >= earliest_year,]
+
+earliest_year = min(year(dmy(SmallTriggerplant$SURVEY_START_DATE)))
+SmallTriggerplant.gbif = SmallTriggerplant.gbif[SmallTriggerplant.gbif$year >= earliest_year,]
+
+earliest_year = min(year(dmy(SouthernBrownTreeFrog$SURVEY_START_DATE)))
+SouthernBrownTreeFrog.gbif = SouthernBrownTreeFrog.gbif[SouthernBrownTreeFrog.gbif$year >= earliest_year,]
+
+earliest_year = min(year(dmy(WhitebrowedTreecreeper$SURVEY_START_DATE)))
+WhitebrowedTreecreeper.gbif = WhitebrowedTreecreeper.gbif[WhitebrowedTreecreeper.gbif$year >= earliest_year,]
+
+```
+
+AGILE
+```{r}
+#Merge lon/lat values with gbif coords and clean the data. 
+Agile.cgbif = subset(Agile.gbif, !is.na(lon) & !is.na(lat)) #Select non-empty lat/lon columns
+Agile.cgbif = Agile.cgbif[,c("lon","lat")] #Get latitude and longitude values
+colnames(Agile.c) = c("lon","lat")
+Agile.cmerged = rbind(Agile.c,Agile.cgbif) #Merge GBIF values with data from DEWLP
+Agile.cmerged = distinct(Agile.cmerged) #Remove duplicated matching lat/lon values
+
+#We see a few outliers
+plot(Agile.cmerged)
+points(Agile.c, col = 'blue')
+
+#See overlap of merged points and points given just by DELWP
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+data("wrld_simpl")
+plot(wrld_simpl,  ylim = c(min(Agile.cmerged$lat - 2), max(Agile.cmerged$lat) + 2 ), xlim = c(min(Agile.cmerged$lon - 2), max(Agile.cmerged$lon) + 2), col="light yellow"); box()
+points(Agile.cmerged, col = "red")
+points(Agile.c, col = "blue")
+abline(h = (max(Agile.cmerged$lat)) + 0.5, col = 'orange')
+
+#Remove 'outliers'
+Agile.cmerged = Agile.cmerged[Agile.cmerged$lat < -30,]
+# Agile.cmerged = Agile.cmerged[Agile.cmerged$lon >= min(Agile.c$lon) & Agile.cmerged$lon <= max(Agile.c$lon),]
+# Agile.cmerged = Agile.cmerged[Agile.cmerged$lat >= min(Agile.c$lat) & Agile.cmerged$lat <= max(Agile.c$lat),]
+
+
+#Cross checking - this ensures coordinates are valid and within Australia
+data("wrld_simpl")
+Agile.cmerged2 = Agile.cmerged
+coordinates(Agile.cmerged2) = ~lon+lat
+crs(Agile.cmerged2) <- crs(wrld_simpl)
+ovr <- over(Agile.cmerged2, wrld_simpl)
+unique(ovr$NAME)
+#There are NA entries, i.e. not from any country which should be removed
+i <- which(ovr$NAME == "Australia")
+
+#Easier is to only select points that are from australia since this species is only in Australia
+Agile.cmerged = Agile.cmerged[c(i),]
+
+#Final inspection of all observation points
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+data("wrld_simpl")
+plot(wrld_simpl,  ylim = c(min(Agile.cmerged$lat - 2), max(Agile.cmerged$lat) + 2 ), xlim = c(min(Agile.cmerged$lon - 2), max(Agile.cmerged$lon) + 2), col="light yellow"); box()
+points(Agile.cmerged, col = "red")
+points(Agile.c, col = "blue")
+abline(h = (max(Agile.cmerged$lat)) + 0.5, col = 'orange')
+
+#Save the merged, preprocess coordinates as a CSV file, only needs to be run once
+# write.csv(Agile.cmerged, "AgileC.csv")
+
+```
+
+Procedure is similiar for the others
+
+BrownTreeCreeper
+```{r}
+BrownTreeCreeper.cgbif = subset(BrownTreeCreeper.gbif, !is.na(lon) & !is.na(lat)) #Select non-empty lat/lon columns
+BrownTreeCreeper.cgbif = BrownTreeCreeper.cgbif[,c("lon","lat")] #Get latitude and longitude values
+colnames(BrownTreeCreeper.c) = c("lon","lat")
+BrownTreeCreeper.cmerged = rbind(BrownTreeCreeper.c,BrownTreeCreeper.cgbif) #Merge GBIF values with data from DEWLP
+BrownTreeCreeper.cmerged =  distinct(BrownTreeCreeper.cmerged) #Remove duplicated matching lat/lon values
+
+#A few outliers
+plot(BrownTreeCreeper.cmerged)
+points(BrownTreeCreeper.c, col = 'blue')
+
+#See overlap of merged points and points given just by DELWP
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(BrownTreeCreeper.cmerged$lat - 2), max(BrownTreeCreeper.cmerged$lat) + 2 ), xlim = c(min(BrownTreeCreeper.cmerged$lon - 2), max(BrownTreeCreeper.cmerged$lon) + 2), col="light yellow"); box()
+points(BrownTreeCreeper.cmerged, col = "red")
+points(BrownTreeCreeper.c, col = "blue")
+abline(h = (max(BrownTreeCreeper.cmerged$lat)) + 0.5, col = 'orange')
+
+#Huge variance between given DELWP data and gbif. Also, too many points, will take long to train models.
+BrownTreeCreeper.cmerged = BrownTreeCreeper.cmerged[BrownTreeCreeper.cmerged$lat < 0 & BrownTreeCreeper.cmerged$lon > 137,]
+
+
+BrownTreeCreeper.cmerged = BrownTreeCreeper.cmerged[BrownTreeCreeper.cmerged$lon >= min(BrownTreeCreeper.c$lon) & BrownTreeCreeper.cmerged$lon <= max(BrownTreeCreeper.c$lon),]
+
+BrownTreeCreeper.cmerged = BrownTreeCreeper.cmerged[BrownTreeCreeper.cmerged$lat >= min(BrownTreeCreeper.c$lat) & BrownTreeCreeper.cmerged$lat <= max(BrownTreeCreeper.c$lat),]
+
+
+
+#Cross checking
+
+data("wrld_simpl")
+BrownTreeCreeper.cmerged2 = BrownTreeCreeper.cmerged
+coordinates(BrownTreeCreeper.cmerged2) = ~lon+lat
+crs(BrownTreeCreeper.cmerged2) <- crs(wrld_simpl)
+ovr <- over(BrownTreeCreeper.cmerged2, wrld_simpl)
+unique(ovr$NAME)
+#There are NA entries, i.e. not from any country which should be removed
+i <- which(ovr$NAME == "Australia")
+
+#Easier is to only select points that are from australia since this species is only in Australia
+
+BrownTreeCreeper.cmerged = BrownTreeCreeper.cmerged[c(i),]
+
+#Let's see how the coordinates look now.. red = only points from DELWP. black = points from both DELWP AND the new downloaded points from GBIF (Global Biodiversity Information Facility)
+plot(BrownTreeCreeper.cmerged)
+points(BrownTreeCreeper.c, col = "red")
+
+#Final inspection of all observation points
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(BrownTreeCreeper.cmerged$lat - 2), max(BrownTreeCreeper.cmerged$lat) + 2 ), xlim = c(min(BrownTreeCreeper.cmerged$lon - 2), max(BrownTreeCreeper.cmerged$lon) + 2), col="light yellow"); box()
+points(BrownTreeCreeper.cmerged, col = "red")
+points(BrownTreeCreeper.c, col = "blue")
+abline(h = (max(BrownTreeCreeper.cmerged$lat)) + 0.5, col = 'orange')
+
+
+#Save the merged, preprocess coordinates as a CSV file, only needs to be run once
+# write.csv(BrownTreeCreeper.cmerged, "BrownTreeCreeperC.csv")
+
+
+```
+
+CommonBeardheath
+```{r}
+CommonBeardheath.cgbif = subset(CommonBeardheath.gbif, !is.na(lon) & !is.na(lat)) #Select non-empty lat/lon columns
+CommonBeardheath.cgbif = CommonBeardheath.cgbif[,c("lon","lat")] #Get latitude and longitude values
+colnames(CommonBeardheath.c) = c("lon","lat")
+CommonBeardheath.cmerged = rbind(CommonBeardheath.c,CommonBeardheath.cgbif) #Merge GBIF values with data from DEWLP
+CommonBeardheath.cmerged = distinct(CommonBeardheath.cmerged)#Remove duplicated matching lat/lon values
+
+
+plot(CommonBeardheath.cmerged)
+points(CommonBeardheath.c, col = 'blue')
+
+#See overlap of merged points and points given just by DELWP
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(CommonBeardheath.cmerged$lat - 2), max(CommonBeardheath.cmerged$lat) + 2 ), xlim = c(min(CommonBeardheath.cmerged$lon - 2), max(CommonBeardheath.cmerged$lon) + 2), col="light yellow"); box()
+points(CommonBeardheath.cmerged, col = "red")
+points(CommonBeardheath.c, col = "blue")
+abline(h = (sort(CommonBeardheath.cmerged$lat, TRUE)[7]) + 0.5, col = 'orange')
+
+
+# CommonBeardheath.cmerged = CommonBeardheath.cmerged[CommonBeardheath.cmerged$lat >-45 & CommonBeardheath.cmerged$lon < 150,]
+# CommonBeardheath.cmerged = CommonBeardheath.cmerged[CommonBeardheath.cmerged$lat >-39.5 & CommonBeardheath.cmerged$lon  >140,]
+# CommonBeardheath.cmerged = CommonBeardheath.cmerged[CommonBeardheath.cmerged$lon >= min(CommonBeardheath.c$lon) & CommonBeardheath.cmerged$lon <= max(CommonBeardheath.c$lon),]
+# CommonBeardheath.cmerged = CommonBeardheath.cmerged[CommonBeardheath.cmerged$lat >= min(CommonBeardheath.c$lat) & CommonBeardheath.cmerged$lat <= max(CommonBeardheath.c$lat),]
+
+#Cross checking
+
+data("wrld_simpl")
+CommonBeardheath.cmerged2 = CommonBeardheath.cmerged
+coordinates(CommonBeardheath.cmerged2) = ~lon+lat
+crs(CommonBeardheath.cmerged2) <- crs(wrld_simpl)
+ovr <- over(CommonBeardheath.cmerged2, wrld_simpl)
+unique(ovr$NAME)
+#There are NA entries, i.e. not from any country which should be removed
+i <- which(ovr$NAME == "Australia")
+
+#Easier is to only select points that are from australia since this species is only in Australia
+
+CommonBeardheath.cmerged = CommonBeardheath.cmerged[c(i),]
+
+#Let's see how the coordinates look now.. red = only points from DELWP. black = points from both DELWP AND the new downloaded points from GBIF (Global Biodiversity Information Facility)
+plot(CommonBeardheath.cmerged)
+points(CommonBeardheath.c, col = "red")
+
+
+#Final inspection of all observation points
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(CommonBeardheath.cmerged$lat - 2), max(CommonBeardheath.cmerged$lat) + 2 ), xlim = c(min(CommonBeardheath.cmerged$lon - 2), max(CommonBeardheath.cmerged$lon) + 2), col="light yellow"); box()
+points(CommonBeardheath.cmerged, col = "red")
+points(CommonBeardheath.c, col = "blue")
+abline(h = (sort(CommonBeardheath.cmerged$lat, TRUE)[7]) + 0.5, col = 'orange')
+
+#Save the merged, preprocessed coordinates as a CSV file, only needs to be run once
+# write.csv(CommonBeardheath.cmerged, "CommonBeardheathC.csv")
+```
+
+```{r}
+
+SmallTriggerplant.cgbif = subset(SmallTriggerplant.gbif, !is.na(lon) & !is.na(lat)) #Select non-empty lat/lon columns
+SmallTriggerplant.cgbif = SmallTriggerplant.cgbif[,c("lon","lat")] #Get latitude and longitude values
+colnames(SmallTriggerplant.c) = c("lon","lat")
+SmallTriggerplant.cmerged = rbind(SmallTriggerplant.c,SmallTriggerplant.cgbif) #Merge GBIF values with data from DEWLP
+SmallTriggerplant.cmerged = distinct(SmallTriggerplant.cmerged) #Remove duplicated matching lat/lon values
+
+
+plot(SmallTriggerplant.cmerged)
+points(SmallTriggerplant.c, col = 'blue')
+
+#See overlap of merged points and points given just by DELWP
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(SmallTriggerplant.cmerged$lat - 2), max(SmallTriggerplant.cmerged$lat) + 2 ), xlim = c(min(SmallTriggerplant.cmerged$lon - 2), max(SmallTriggerplant.cmerged$lon) + 2), col="light yellow"); box()
+points(SmallTriggerplant.cmerged, col = "red")
+points(SmallTriggerplant.c, col = "blue")
+abline(h = (sort(SmallTriggerplant.cmerged$lat, TRUE)[1]) + 0.5, col = 'orange')
+
+
+
+
+#Keep all GBIF ones otherwise we lack data, <100 observations
+
+# SmallTriggerplant.cmerged = SmallTriggerplant.cmerged[SmallTriggerplant.cmerged$lat >-45 & SmallTriggerplant.cmerged$lon > 140,]
+# SmallTriggerplant.cmerged = SmallTriggerplant.cmerged[SmallTriggerplant.cmerged$lat >-40 & SmallTriggerplant.cmerged$lon < 150,]
+# SmallTriggerplant.cmerged = SmallTriggerplant.cmerged[SmallTriggerplant.cmerged$lat <-36 & SmallTriggerplant.cmerged$lon < 150,]
+
+# SmallTriggerplant.cmerged = SmallTriggerplant.cmerged[SmallTriggerplant.cmerged$lon >= min(SmallTriggerplant.c$lon) & SmallTriggerplant.cmerged$lon <= max(SmallTriggerplant.c$lon),]
+# SmallTriggerplant.cmerged = SmallTriggerplant.cmerged[SmallTriggerplant.cmerged$lat >= min(SmallTriggerplant.c$lat) & SmallTriggerplant.cmerged$lat <= max(SmallTriggerplant.c$lat),]
+
+data("wrld_simpl")
+SmallTriggerplant.cmerged2 = SmallTriggerplant.cmerged
+coordinates(SmallTriggerplant.cmerged2) = ~lon+lat
+crs(SmallTriggerplant.cmerged2) <- crs(wrld_simpl)
+ovr <- over(SmallTriggerplant.cmerged2, wrld_simpl)
+unique(ovr$NAME)
+#There are NA entries, i.e. not from any country which should be removed
+ovr[is.na(ovr$NAME),]
+
+#Easier is to only select points that are from australia since this species is only in Australia
+i <- which(ovr$NAME == "Australia")
+SmallTriggerplant.cmerged = SmallTriggerplant.cmerged[c(i),]
+
+#Let's see how the coordinates look now.. red = only points from DELWP. black = points from both DELWP AND the new downloaded points from GBIF (Global Biodiversity Information Facility)
+plot(SmallTriggerplant.cmerged)
+points(SmallTriggerplant.c, col = "red")
+
+#Final inspection of all observation points
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(SmallTriggerplant.cmerged$lat - 2), max(SmallTriggerplant.cmerged$lat) + 2 ), xlim = c(min(SmallTriggerplant.cmerged$lon - 2), max(SmallTriggerplant.cmerged$lon) + 2), col="light yellow"); box()
+points(SmallTriggerplant.cmerged, col = "red")
+points(SmallTriggerplant.c, col = "blue")
+abline(h = (sort(SmallTriggerplant.cmerged$lat, TRUE)[1]) + 0.5, col = 'orange')
+
+#Save the merged, preprocessed coordinates as a CSV file - only needs to be run once
+# write.csv(SmallTriggerplant.cmerged, "SmallTriggerplantC.csv")
+
+```
+
+
+SouthernBrownTreeFrog
+```{r}
+
+SouthernBrownTreeFrog.cgbif = subset(SouthernBrownTreeFrog.gbif, !is.na(lon) & !is.na(lat)) #Select non-empty lat/lon columns
+SouthernBrownTreeFrog.cgbif = SouthernBrownTreeFrog.cgbif[,c("lon","lat")] #Get latitude and longitude values
+colnames(SouthernBrownTreeFrog.c) = c("lon","lat")
+SouthernBrownTreeFrog.cmerged = rbind(SouthernBrownTreeFrog.c,SouthernBrownTreeFrog.cgbif) #Merge GBIF values with data from DEWLP
+SouthernBrownTreeFrog.cmerged = distinct(SouthernBrownTreeFrog.cmerged) #Remove duplicated matching lat/lon values
+
+
+
+plot(SouthernBrownTreeFrog.cmerged)
+points(SouthernBrownTreeFrog.c, col = 'blue')
+
+#Remove two clear outliers
+SouthernBrownTreeFrog.cmerged = SouthernBrownTreeFrog.cmerged[SouthernBrownTreeFrog.cmerged$lon > 130,]
+
+#See overlap of merged points and points given just by DELWP
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(SouthernBrownTreeFrog.cmerged$lat - 2), max(SouthernBrownTreeFrog.cmerged$lat) + 2 ), xlim = c(min(SouthernBrownTreeFrog.cmerged$lon - 2), max(SouthernBrownTreeFrog.cmerged$lon) + 2), col="light yellow"); box()
+points(SouthernBrownTreeFrog.cmerged, col = "red")
+points(SouthernBrownTreeFrog.c, col = "blue")
+abline(h = (sort(SouthernBrownTreeFrog.cmerged$lat, TRUE)[15]) + 0.5, col = 'orange')
+
+
+
+# 
+# SouthernBrownTreeFrog.cmerged = SouthernBrownTreeFrog.cmerged[SouthernBrownTreeFrog.cmerged$lat >-60 & SouthernBrownTreeFrog.cmerged$lon > 130,]
+# SouthernBrownTreeFrog.cmerged = SouthernBrownTreeFrog.cmerged[SouthernBrownTreeFrog.cmerged$lat >-60 & SouthernBrownTreeFrog.cmerged$lon < 155,]
+# 
+# SouthernBrownTreeFrog.cmerged = SouthernBrownTreeFrog.cmerged[SouthernBrownTreeFrog.cmerged$lon >= min(SouthernBrownTreeFrog.c$lon) & SouthernBrownTreeFrog.cmerged$lon <= max(SouthernBrownTreeFrog.c$lon),]
+# SouthernBrownTreeFrog.cmerged = SouthernBrownTreeFrog.cmerged[SouthernBrownTreeFrog.cmerged$lat >= min(SouthernBrownTreeFrog.c$lat) & SouthernBrownTreeFrog.cmerged$lat <= max(SouthernBrownTreeFrog.c$lat),]
+
+
+
+
+data("wrld_simpl")
+SouthernBrownTreeFrog.cmerged2 = SouthernBrownTreeFrog.cmerged
+coordinates(SouthernBrownTreeFrog.cmerged2) = ~lon+lat
+crs(SouthernBrownTreeFrog.cmerged2) <- crs(wrld_simpl)
+ovr <- over(SouthernBrownTreeFrog.cmerged2, wrld_simpl)
+unique(ovr$NAME)
+#There are NA entries, i.e. not from any country which should be removed
+ovr[is.na(ovr$NAME),]
+
+#Easier is to only select points that are from australia since this species is only in Australia
+NROW(which(ovr$NAME == "Australia"))
+NROW(which(ovr$NAME == "New Zealand"))#Recently introduced to NZ. 58 rows vs 6k. Original DEWLPL dataset doesn't contain observations from NZ. Don't keep NZ data
+     
+i <- which(ovr$NAME == "Australia")
+SouthernBrownTreeFrog.cmerged = SouthernBrownTreeFrog.cmerged[c(i),]
+
+#Let's see how the coordinates look now.. red = only points from DELWP. black = points from both DELWP AND the new downloaded points from GBIF (Global Biodiversity Information Facility)
+plot(SouthernBrownTreeFrog.cmerged)
+points(SouthernBrownTreeFrog.c, col = "red")
+
+
+#Final inspection of all observation points
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(SouthernBrownTreeFrog.cmerged$lat - 2), max(SouthernBrownTreeFrog.cmerged$lat) + 2 ), xlim = c(min(SouthernBrownTreeFrog.cmerged$lon - 2), max(SouthernBrownTreeFrog.cmerged$lon) + 2), col="light yellow"); box()
+points(SouthernBrownTreeFrog.cmerged, col = "red")
+points(SouthernBrownTreeFrog.c, col = "blue")
+abline(h = (sort(SouthernBrownTreeFrog.cmerged$lat, TRUE)[15]) + 0.5, col = 'orange')
+
+
+#Save the merged, preprocessed coordinates as a CSV file, only needs to be run once
+# write.csv(SouthernBrownTreeFrog.cmerged, "SouthernBrownTreeFrogC.csv")
+
+```
+
+
+
+WhitebrowedTreecreeper
+```{r}
+
+WhitebrowedTreecreeper.cgbif = subset(WhitebrowedTreecreeper.gbif, !is.na(lon) & !is.na(lat)) #Select non-empty lat/lon columns
+WhitebrowedTreecreeper.cgbif = WhitebrowedTreecreeper.cgbif[,c("lon","lat")] #Get latitude and longitude values
+colnames(WhitebrowedTreecreeper.c) = c("lon","lat")
+WhitebrowedTreecreeper.cmerged = rbind(WhitebrowedTreecreeper.c,WhitebrowedTreecreeper.cgbif) #Merge GBIF values with data from DEWLP
+WhitebrowedTreecreeper.cmerged = distinct(WhitebrowedTreecreeper.cmerged) #Remove duplicated matching lat/lon values
+
+
+plot(WhitebrowedTreecreeper.cmerged)
+points(WhitebrowedTreecreeper.c, col = 'blue')
+
+#See overlap of merged points and points given just by DELWP
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(WhitebrowedTreecreeper.cmerged$lat - 2), max(WhitebrowedTreecreeper.cmerged$lat) + 2 ), xlim = c(min(WhitebrowedTreecreeper.cmerged$lon - 2), max(WhitebrowedTreecreeper.cmerged$lon) + 2), col="light yellow"); box()
+points(WhitebrowedTreecreeper.cmerged, col = "red")
+points(WhitebrowedTreecreeper.c, col = "blue")
+abline(h = (sort(WhitebrowedTreecreeper.cmerged$lat, TRUE)[4]) + 0.5, col = 'orange')
+
+
+
+# WhitebrowedTreecreeper.cmerged  WhitebrowedTreecreeper.cmerged[WhitebrowedTreecreeper.cmerged$lat < -20,]
+# 
+# WhitebrowedTreecreeper.cmerged = WhitebrowedTreecreeper.cmerged[WhitebrowedTreecreeper.cmerged$lon >= min(WhitebrowedTreecreeper.c$lon) & WhitebrowedTreecreeper.cmerged$lon <= max(WhitebrowedTreecreeper.c$lon),]
+# WhitebrowedTreecreeper.cmerged = WhitebrowedTreecreeper.cmerged[WhitebrowedTreecreeper.cmerged$lat >= min(WhitebrowedTreecreeper.c$lat) & WhitebrowedTreecreeper.cmerged$lat <= max(WhitebrowedTreecreeper.c$lat),]
+
+data("wrld_simpl")
+WhitebrowedTreecreeper.cmerged2 = WhitebrowedTreecreeper.cmerged
+coordinates(WhitebrowedTreecreeper.cmerged2) = ~lon+lat
+crs(WhitebrowedTreecreeper.cmerged2) <- crs(wrld_simpl)
+ovr <- over(WhitebrowedTreecreeper.cmerged2, wrld_simpl)
+unique(ovr$NAME)
+#There are NA entries, i.e. not from any country which should be removed
+ovr[is.na(ovr$NAME),]
+
+#Easier is to only select points that are from australia since this species is only in Australia
+i <- which(ovr$NAME == "Australia")
+WhitebrowedTreecreeper.cmerged = WhitebrowedTreecreeper.cmerged[c(i),]
+
+#Let's see how the coordinates look now.. red = only points from DELWP. black = points from both DELWP AND the new downloaded points from GBIF (Global Biodiversity Information Facility)
+plot(WhitebrowedTreecreeper.cmerged)
+points(WhitebrowedTreecreeper.c, col = "red")
+
+#Final inspection of all observation points
+#RED POINTS = additional observations from gbif, Blue points = observations in DELWP dataset
+plot(wrld_simpl,  ylim = c(min(WhitebrowedTreecreeper.cmerged$lat - 2), max(WhitebrowedTreecreeper.cmerged$lat) + 2 ), xlim = c(min(WhitebrowedTreecreeper.cmerged$lon - 2), max(WhitebrowedTreecreeper.cmerged$lon) + 2), col="light yellow"); box()
+points(WhitebrowedTreecreeper.cmerged, col = "red")
+points(WhitebrowedTreecreeper.c, col = "blue")
+abline(h = (sort(WhitebrowedTreecreeper.cmerged$lat, TRUE)[4]) + 0.5, col = 'orange')
+
+#Save the merged, preprocessed coordinates as a CSV file. Only needs to be run once
+
+# write.csv(WhitebrowedTreecreeper.cmerged, "WhitebrowedTreecreeperC.csv")
+
+```
+
+
+```{r}
+#Save workspace. So code won't need to be run again in the future.
+# save.session(file='Preprocessing.Rda')
+```
+
