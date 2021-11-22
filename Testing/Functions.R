@@ -117,11 +117,11 @@ getExtent = function(coordinates.c) {
 }
 
 
-#Our own plot function to reduce repetitive code when ploting.
-#It takes prescene and abscene points in the form of a dataframe that containing the lon/lat values for these points
+#Our own plot function to reduce repetitive code when plotting.
+#It takes presence and absence points in the form of a data frame that containing the lon/lat values for these points
 #It also takes an extent value representing the ylim and xlim of the plot
-#A boolean value is also provided determing if it should plot the abscene points or not
-#The prescene points will be orange and the abscene points will be red
+#A Boolean value is also provided determine if it should plot the absence points or not
+#The presence points will be orange and the absence points will be red
 plot_ = function(p, a, extent, plotAbs = TRUE) {
   x = c(slot(extent, "xmin"), slot(extent, "xmax"))
   y = c(slot(extent, "ymin"), slot(extent, "ymax"))
