@@ -18,6 +18,6 @@ Running the image created.
 -- Wait for Listening on http://0.0.0.0:8080
 
 Opening the app on the web browser.
--- Go to the local ip address. In this case, since i am using docker toolbox, it created its own IP address. (192.168.99.100)
+-- Go to the local ip address. In this case, since I am using docker toolbox, it created its own IP address. (192.168.99.100)
 -- If you are using Docker Daemon. Use "localhost:8080"
 -- So go to the web browser and type in "192.168.99.100:8080"

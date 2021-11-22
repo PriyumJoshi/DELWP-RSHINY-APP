@@ -6,7 +6,8 @@ options(digits = 5)
 packages = c("DT", "shinydashboard", "installr", "raster" ,"shinybusy","session", "pacman", "BiocManager", "raster", "rgdal", "dismo", "rJava","sp","maptools","rgeos","ROCR","randomForest","adabag","e1071","tree","neuralnet", "shiny", "leaflet", "smds", "remotes", "rgeos", "adabag" , "randomForest", "maptools" ,"rpart", "tree", "e1071", "lubridate", "dplyr", "spatialEco", "SSDM", "testthat", "knitr", "rmarkdown", "rgdal")
 
 
-#Used to install the packages. Comment if packages already installed
+
+#Used to install the packages. Comment out if packages already installed
 p_load(packages, character.only = TRUE)
 updateR()
 p_loaded(packages, character.only = TRUE)
