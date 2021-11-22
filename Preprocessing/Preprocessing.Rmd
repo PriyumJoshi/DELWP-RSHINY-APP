@@ -55,9 +55,8 @@ SmallTriggerplant.c= SmallTriggerplant[,c(13,12)]
 SouthernBrownTreeFrog.c = SouthernBrownTreeFrog[,c(13,12)]
 WhitebrowedTreecreeper.c= WhitebrowedTreecreeper[,c(13,12)]
 
-#------ NO NEED TO RUN THIS AGAIN. RESULT IS ALREADY SAVED -------------
-
-# #Additional coordinates downloaded from Global Biodiversity Information Facility
+#------ ONLY RUN THIS IF THE FILES ARE NOT ALREADY DOWNLOADED -----
+# Additional coordinates downloaded from Global Biodiversity Information Facility
 # Agile.gbif = gbif('Antechinus', 'agilis') #https://www.gbif.org/species/2435369
 # BrownTreeCreeper.gbif = gbif('Climacteris', 'picumnus') #https://www.gbif.org/species/2494126
 # SmallTriggerplant.gbif = gbif("Stylidium", "despectum") #https://www.gbif.org/species/5543531

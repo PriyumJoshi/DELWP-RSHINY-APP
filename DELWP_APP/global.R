@@ -20,7 +20,7 @@ colnames(data)
 library("raster")
 
 
-#Load known high reliable/confiremd observations in DELWP dataset
+#Load known high reliable/confirmed observations in DELWP dataset
 data = read.csv("Monash_sample_VBA.csv", stringsAsFactors = FALSE)
 data = data[data$RELIABILITY != "Unconfirmed" & data$RELIABILITY != "" ,]
 data = data[,c(4,13,12)]
