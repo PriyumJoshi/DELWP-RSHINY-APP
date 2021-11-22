@@ -42,7 +42,7 @@ p_loaded(packages, character.only = TRUE)
 
 
 
-#This function generates psuedo-abscene points THAT ARE CLOSE to our observaiton points.
+#This function generates psuedo-abscene points THAT ARE CLOSE to our observation points.
 #It uses the spaitalEco library's function to do so
 #It takes in a dataframe containing the longitude/latitude values (named lon/lat) and a value 'n'
 #which is roughly the number of psuedo-abscene points generated

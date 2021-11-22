@@ -20,13 +20,12 @@ This data includes: <ul>
 Biodiversity data for each relevant species was obtained from the <a href="https://www.gbif.org">Global Biodiversity Information Facility</a>. 
 This was done using <a href="https://cran.r-project.org/web/packages/dismo/dismo.pdf">functions</a> from the R package <a href="https://www.rdocumentation.org/packages/dismo/versions/0.7-6/topics/gbif">Dismo</a>.
 
-Once all this data was obtained, preprocessing was done to remove any unuseful and irrelevant data.
+Once all this data was obtained, preprocessing was done to remove unhelpful data such as outliers and unreliable data.
 
 Relevant environmental data was obtained from <a href="https://www.worldclim.org/data/bioclim.html">WorldClim</a>. 19 bioclimatic variables, which are commonly used in species distribution modeling, was linked to the verified observation locations, thus creating thus creating additional attributes for each observation point on top of the collection method attributes.
 
-
 <h2> Modelling </h2>
-Geospatial processing was to extract attribute values from the enviornmental data for the species observation points.
+Geo-spatial processing was to extract attribute values from the environmental data for the species observation points.
 Pseudo-absence data was also generated for each species and used when creating the models. <br> <br>
 
 The SSDM (Stacked Species Distribution Modelling) R package was used to create 
