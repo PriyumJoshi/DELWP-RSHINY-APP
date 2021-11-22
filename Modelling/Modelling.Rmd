@@ -264,10 +264,10 @@ save.session(file='Modelling.Rda')
 Creating the models - DONE ONE BY ONE FOR EACH SPECIES
 CAN TAKE SEVERAL HOURS
 ```{r eval = FALSE}
-#Read in reliable known points; we are letting model generate psuedo abscenes
+#Read in reliable known points; we are letting model generate pseudo abscenes
 species.c = read.csv("speciesC_PA.csv", stringsAsFactors=FALSE)
 species.c$X = NULL
-species.c_pres = species.c[species.c$reliability == 1,] #only prescene points
+species.c_pres = species.c[species.c$reliability == 1,] #only presence points
 
 curr1 =  species.c_pres[species.c_pres$species == "Agile antechinus",]
 curr2 =  species.c_pres[species.c_pres$species == "Brown Treecreeper",]
