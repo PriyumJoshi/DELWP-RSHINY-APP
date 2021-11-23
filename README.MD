@@ -29,11 +29,11 @@ Geo-spatial processing was to extract attribute values from the environmental da
 Pseudo-absence data was also generated for each species and used when creating the models. <br> <br>
 
 The  <a href="https://cran.r-project.org/web/packages/SSDM/vignettes/SSDM.html">SSDM (Stacked Species Distribution Modelling)</a> R package was used to create <a href="https://rdrr.io/cran/SSDM/man/ensemble_modelling.html">Ensemble</a> Species Distribution Models for each of the species.  <br> <br>
-After the ensemble Species Distribution Models were created, each ensemble model were stacked in an <a href="https://rdrr.io/cran/SSDM/man/stacking.html">Stacked Species Distribution Model</a>.
+After the ensemble Species Distribution Models were created, each ensemble model were stacked in a <a href="https://rdrr.io/cran/SSDM/man/stacking.html">stacked species distribution model</a>.
 
 
 <h2> Testing </h2>
-After experimenting and testing with the various algorithms, we decided to use the Random Forest as the main algorithm to for the species distribution models.  Models were evaluted using k-fold cross validation.
+After experimenting and testing with various algorithms, we decided to use Random Forest as the main algorithm for the species distribution models. Models were evaluted using k-fold cross validation.
 
 The AUC for the final model for each species:
 ![image](https://user-images.githubusercontent.com/84790185/142960591-eb4af18d-6ab3-4b31-8593-4f70e2a6cc99.png)
