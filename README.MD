@@ -87,8 +87,7 @@ Note: you can zoom in and out of the binary and projection map.
 ![image](https://user-images.githubusercontent.com/84790185/142969209-7b4104cd-45b2-47c4-9f8d-c6edd6612a5b.png)
 
 
-There is also a section called “Stacked species”
-It uses the stacked species distribution model to providel species richness map which shows how many species you expect to find in certain locations.
+There is also a section called “Stacked species”. This uses the stacked species distribution model to provide a species richness map that shows the number of species you expect to find in certain locations.
 
 ![image](https://user-images.githubusercontent.com/84790185/142969222-8ee935ba-0de6-42fc-bd6d-12d44acabf79.png)
 
