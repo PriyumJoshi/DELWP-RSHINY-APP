@@ -80,6 +80,8 @@ The summary tab provided information regarding how the model was built. This mod
 
 ![image](https://user-images.githubusercontent.com/84790185/142969195-4fcb19dd-74d0-49bc-8e85-42d60ac866e3.png)
 
+<br>
+
 Note: you can zoom in and out of the binary and projection map
 ![image](https://user-images.githubusercontent.com/84790185/142969209-7b4104cd-45b2-47c4-9f8d-c6edd6612a5b.png)
 
