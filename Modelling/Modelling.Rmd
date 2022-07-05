@@ -96,7 +96,7 @@ extent_australia = extent(100,160,-50,15)
 ```{r}
 Agile.c = read.csv("AgileC.csv") #Reading the data in; 2 columns containing the longitude and latitude
 Agile.c = Agile.c[,c(2:3)]
-
+e
 Agile.bg_extent = extent(100,160,max(Agile.c$lat) + 0.5, -10) #Coordinates around Australia where our observation points are not in
 data("wrld_simpl")
 
